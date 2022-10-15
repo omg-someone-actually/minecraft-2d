@@ -23,9 +23,10 @@ class Minecraft:
             self.textures[asset.lower()] = pygame.transform.scale(pygame.image.load(f'assets/{asset}.PNG').convert(), (100,100))
 
     def generate_map(self) -> None:
-        bottom_layer = choices(['stone', 'coal', 'gold', 'redstone'], weights=[30, 4, 1, 2], k=15)
-        for i, texture in enumerate(bottom_layer):
-            self.screen.blit(self.textures[texture], (i*100, self.height-100))
+        for y in range(3):
+            layer = choices(['stone', 'coal', 'gold', 'redstone'], weights=[40, 10, 1, 2], k=15)
+            for x, texture in enumerate(layer):
+                self.screen.blit(self.textures[texture], (x*100, self.height-(100*(y+1))))
 
     def screen_update(self) -> None:
         while True:
