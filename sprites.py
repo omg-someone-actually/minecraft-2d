@@ -8,7 +8,11 @@ class Player(pygame.sprite.Sprite):
         self.vec = pygame.math.Vector2
         self.ACC = 0.5
         self.FRIC = -0.12
-        
+
+        self.health = 20
+        self.last_damaged_time = 0
+        self.y_level = 0
+        self.x_level = 0
         self.image = image
         self.pos = self.vec(200, 200)
         self.width, self.height = (width, height)
@@ -20,7 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.is_grounded = False
         self.is_in_water = False
         
-    def move(self, move, blocks, x, y) -> int:
+    def move(self, move: str, blocks: dict, x: int, y: int) -> int:
         self.acc = self.vec(0, 0)
         for block in blocks:
             if block.type == 'water' and pygame.sprite.collide_rect(self, block):
@@ -112,7 +116,7 @@ class Zombie(pygame.sprite.Sprite):
         self.is_grounded = False
         self.is_in_water = False
         
-    def move(self, blocks, player) -> int:
+    def move(self, blocks: dict, player: Player) -> int:
         if player:
             move = self.calculate_move(player, blocks)
             self.acc = self.vec(0, 0)

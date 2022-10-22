@@ -20,7 +20,10 @@ class Minecraft:
         self.background = pygame.transform.scale(pygame.image.load('assets/sky.PNG').convert(), (self.width, self.height))
         self.screen.blit(self.background, (0,0))
 
-        self.paused_icon = pygame.transform.scale(pygame.image.load('assets/paused.PNG').convert(), (self.width, self.height))
+        self.paused_icon = pygame.transform.scale(pygame.image.load('assets/paused.PNG').convert_alpha(), (self.width/2, self.height/2))
+        self.full_heart = pygame.transform.scale(pygame.image.load('assets/heart.png').convert_alpha(), (30,30))
+        self.half_heart = pygame.transform.flip(pygame.transform.scale(pygame.image.load('assets/halfheart.png').convert_alpha(), (30,30)), True, False)
+        self.empty_heart = pygame.transform.scale(pygame.image.load('assets/noheart.png').convert_alpha(), (30,30))
         
         self.player = pygame.transform.scale(pygame.image.load('assets/steve.PNG').convert_alpha(), (75, 150))
         self.player = Player(self.player, 75, 150, self.screen)
@@ -33,8 +36,6 @@ class Minecraft:
         self.selected_block = 'stone'
         self.selectable_blocks = ['stone', 'coal', 'gold','redstone', 'grass', 'sand', 'water', 'dirt', 'glass', 'plank']
         self.paused = False
-        self.y_level = 0
-        self.x_level = 0
 
         self.load_assets()
         self.generate_map()
@@ -43,9 +44,11 @@ class Minecraft:
     def load_assets(self) -> None:
         assets = ['dirt', 'stone', 'coal', 'gold', 'redstone', 'grass', 'sand', 'water', 'glass', 'plank']
         self.textures = {}
+        self.mini_blocks = {}
         
         for asset in assets:
             self.textures[asset.lower()] = pygame.transform.scale(pygame.image.load(f'assets/{asset}.PNG').convert(), (100,100))
+            self.mini_blocks[asset.lower()] = pygame.transform.scale(pygame.image.load(f'assets/{asset}.PNG').convert(), (50,50))
 
     def generate_map(self) -> None:
         x, y = self.x, self.y
@@ -87,7 +90,7 @@ class Minecraft:
         zombie = Zombie(zombie, 75, 150, self.screen)
         self.zombies.append(zombie)
 
-    def add_block(self, x, y) -> None:
+    def add_block(self, x: int, y: int) -> None:
         for block in self.blocks[self.x][self.y]:
             if block.pos == (x, y):
                 return
@@ -95,19 +98,40 @@ class Minecraft:
         if not pygame.sprite.collide_rect(new_block, self.player) and not any([pygame.sprite.collide_rect(zombie, new_block) for zombie in self.zombies]):
             self.blocks[self.x][self.y].append(new_block)
 
-    def remove_block(self, x, y) -> None:
+    def remove_block(self, x: int, y: int) -> None:
         for block in self.blocks[self.x][self.y]:                    
             if block.rect.collidepoint(x, y):
                 self.blocks[self.x][self.y].remove(block)
 
     def render_screen(self) -> None:
         self.screen.blit(self.background, (0,0))
-        self.text = self.font.render(f'x={self.x_level} y={self.y_level}', True, (255, 255, 255), (0, 0, 0))
-        self.screen.blit(self.text, (0, 0))
-        self.screen.blit(pygame.transform.scale(pygame.image.load(f'assets/{self.selected_block}.PNG').convert(), (50,50)), (0, 50))
         
         for block in self.blocks[self.x][self.y]:
             block.show()
+
+        hearts_shown = 0
+        for i in range(10):
+            if hearts_shown + 2 <= self.player.health:
+                self.screen.blit(self.full_heart, (self.width-((i+1)*35), 10))
+                hearts_shown += 2
+            elif hearts_shown + 1 <= self.player.health:
+                self.screen.blit(self.half_heart, (self.width-((i+1)*35), 10))
+                hearts_shown += 1
+            else:
+                self.screen.blit(self.empty_heart, (self.width-((i+1)*35), 10))
+            
+        self.text = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
+        self.screen.blit(self.text, (0, 0))
+        self.screen.blit(self.mini_blocks[self.selected_block], (0, 50))
+
+    def restart_game(self) -> None:
+        self.blocks = {}
+        self.zombies = []
+        self.x, self.y = 1, 1
+        self.player.health = 20
+        self.player.last_damaged_time = 0
+        self.generate_map()
+    
 
     def event_handler(self) -> None:
         for event in pygame.event.get():
@@ -123,10 +147,7 @@ class Minecraft:
                         
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r and not self.paused:
-                    self.blocks = {}
-                    self.zombies = []
-                    self.x, self.y = 1, 1
-                    self.generate_map()
+                    self.restart_game()
                     
                 elif event.key == pygame.K_ESCAPE:
                     self.paused = not self.paused
@@ -151,12 +172,16 @@ class Minecraft:
                 break
 
         self.x, self.y = self.player.move(new_move if not self.paused else None, self.blocks[self.x][self.y], self.x, self.y)
-        self.y_level = int(int(self.height - self.player.pos.y) / 100) + ((self.y-1) * 9)
-        self.x_level = int(int(self.player.pos.x - self.width) / 100) + ((self.x-1) * 16)
+        self.player.y_level = int(int(self.height - self.player.pos.y) / 100) + ((self.y-1) * 9)
+        self.player.x_level = int(int(self.player.pos.x - self.width) / 100) + ((self.x-1) * 16)
         self.generate_map()
         
         for zombie in self.zombies:
             zombie.move(self.blocks[self.x][self.y], self.player if not self.paused else None)
+            if pygame.sprite.collide_rect(zombie, self.player) and self.player.last_damaged_time > 10:
+                self.player.health -= 1
+                self.player.last_damaged_time = 0
+                
 
     def screen_update(self) -> None:
         while True:
@@ -168,8 +193,13 @@ class Minecraft:
             self.move_entities()
             
             if self.paused:    
-                self.screen.blit(self.paused_icon, (0, 0))
-
+                self.screen.blit(self.paused_icon, self.paused_icon.get_rect(center = self.screen.get_rect().center))
+                
+            self.player.last_damaged_time += 1
+            if self.player.health <= 0:
+                self.paused = True
+                self.restart_game()
+            
             pygame.event.pump()
             self.clock.tick(100)
                 
