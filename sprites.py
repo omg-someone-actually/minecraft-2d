@@ -79,14 +79,14 @@ class Player(pygame.sprite.Sprite):
 
         if self.pos.x < 0:
             x -= 1
-            self.pos.x = 1300
-        elif self.pos.x > 1400:
+            self.pos.x = self.screen.get_width() - self.width
+        elif self.pos.x > self.screen.get_width() - self.width:
             x += 1
-            self.pos.x = 100
+            self.pos.x = 0
         if self.pos.y < 0 and y < 1:
             y += 1
             self.pos.y = 700
-        elif self.pos.y > 800:
+        elif self.pos.y > self.screen.get_height():
             y -= 1
             self.pos.y = 100
 

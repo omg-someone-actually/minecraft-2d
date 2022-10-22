@@ -1,5 +1,6 @@
 import pygame
 from random import choices
+import math
 from block import Block
 from sprites import Player, Zombie
 
@@ -8,10 +9,13 @@ class Minecraft:
         pygame.init()
         self.clock = pygame.time.Clock()
         
-        self.screen = pygame.display.set_mode(size=(1400, 800))
+        self.screen = pygame.display.set_mode()
         self.width, self.height = pygame.display.get_surface().get_size()
         pygame.display.set_caption('Minecraft!')
         self.font = pygame.font.Font('freesansbold.ttf', 50)
+        self.y_offset = self.height - math.floor(self.height/100)*100 
+        self.total_blocks_x = math.ceil(self.width / 100)
+        self.total_blocks_y = math.ceil(self.height / 100)
         
         self.background = pygame.transform.scale(pygame.image.load('assets/sky.PNG').convert(), (self.width, self.height))
         self.screen.blit(self.background, (0,0))
@@ -29,6 +33,8 @@ class Minecraft:
         self.selected_block = 'stone'
         self.selectable_blocks = ['stone', 'coal', 'gold','redstone', 'grass', 'sand', 'water', 'dirt', 'glass', 'plank']
         self.paused = False
+        self.y_level = 0
+        self.x_level = 0
 
         self.load_assets()
         self.generate_map()
@@ -54,26 +60,26 @@ class Minecraft:
                 selected_biome = 'plains'
             if selected_biome == 'plains':
                 for i in range(2):    
-                    for x_cord, texture in enumerate(['dirt' for i in range(15)]):
+                    for x_cord, texture in enumerate(['dirt' for i in range(self.total_blocks_x)]):
                         self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-((i+1)*100), self.screen, self.background, texture, self.blocks[x][1]))
-                for x_cord, texture in enumerate(['grass' for i in range(15)]):
+                for x_cord, texture in enumerate(['grass' for i in range(self.total_blocks_x)]):
                     self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-(300), self.screen, self.background, texture, self.blocks[x][1]))
             elif selected_biome == 'ocean':
-                for x_cord, texture in enumerate(['stone' for i in range(15)]):
+                for x_cord, texture in enumerate(['stone' for i in range(self.total_blocks_x)]):
                     self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-100, self.screen, self.background, texture, self.blocks[x][1]))
                 for i in range(2):
-                    for x_cord, texture in enumerate(['water' for i in range(15)]):
+                    for x_cord, texture in enumerate(['water' for i in range(self.total_blocks_x)]):
                         self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-((i+2)*100), self.screen, self.background, texture, self.blocks[x][1]))
             elif selected_biome == 'desert':
-                for x_cord, texture in enumerate(['stone' for i in range(15)]):
+                for x_cord, texture in enumerate(['stone' for i in range(self.total_blocks_x)]):
                     self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-100, self.screen, self.background, texture, self.blocks[x][1]))
                 for i in range(2):
-                    for x_cord, texture in enumerate(['sand' for i in range(15)]):
+                    for x_cord, texture in enumerate(['sand' for i in range(self.total_blocks_x)]):
                         self.blocks[x][1].append(Block(self.textures[texture], x_cord*100, self.height-((i+1)*100), self.screen, self.background, texture, self.blocks[x][1]))
         if not y in self.blocks[x]:
             self.blocks[x][y] = []
-            for i in range(5):
-                for x_cord, texture in enumerate(choices(['stone', 'coal', 'gold', 'redstone'], weights=[50, 10, 1, 2], k=15)):
+            for i in range(self.total_blocks_y):
+                for x_cord, texture in enumerate(choices(['stone', 'coal', 'gold', 'redstone'], weights=[50, 10, 1, 2], k=self.total_blocks_x)):
                     self.blocks[x][y].append(Block(self.textures[texture], x_cord*100, self.height-((i+1)*100), self.screen, self.background, texture, self.blocks[x][y]))
 
     def spawn_zombie(self) -> None:
@@ -96,7 +102,7 @@ class Minecraft:
 
     def render_screen(self) -> None:
         self.screen.blit(self.background, (0,0))
-        self.text = self.font.render(f'x={self.x} y={self.y}', True, (255, 255, 255), (0, 0, 0))
+        self.text = self.font.render(f'x={self.x_level} y={self.y_level}', True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(self.text, (0, 0))
         self.screen.blit(pygame.transform.scale(pygame.image.load(f'assets/{self.selected_block}.PNG').convert(), (50,50)), (0, 50))
         
@@ -112,7 +118,7 @@ class Minecraft:
                     
                 elif event.button == 3:
                     x, y = event.pos
-                    x, y = round(x/100)*100, (round(y/100)*100)
+                    x, y = round(x/100)*100, (round(y/100)*100)+self.y_offset
                     self.add_block(x, y)
                         
             elif event.type == pygame.KEYDOWN:
@@ -145,6 +151,8 @@ class Minecraft:
                 break
 
         self.x, self.y = self.player.move(new_move if not self.paused else None, self.blocks[self.x][self.y], self.x, self.y)
+        self.y_level = int(int(self.height - self.player.pos.y) / 100) + ((self.y-1) * 9)
+        self.x_level = int(int(self.player.pos.x - self.width) / 100) + ((self.x-1) * 16)
         self.generate_map()
         
         for zombie in self.zombies:
