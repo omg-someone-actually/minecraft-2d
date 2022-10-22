@@ -24,7 +24,8 @@ class Player(pygame.sprite.Sprite):
         self.acc = self.vec(0, 0)
         for block in blocks:
             if block.type == 'water' and pygame.sprite.collide_rect(self, block):
-                self.vel.y += 0.001
+                self.vel.y /= 1.05
+                self.vel.y += 0.005
                 self.is_grounded = False
                 self.is_in_water = True
                 break
@@ -47,24 +48,27 @@ class Player(pygame.sprite.Sprite):
             valid_move = True
             
             for block in blocks:
-                if pygame.sprite.collide_rect(self, block):
+                if pygame.sprite.collide_rect(self, block) and block.type != 'water':
                     if self.rect.left - 10 < block.rect.right and self.rect.bottom > block.rect.bottom:
                         valid_move = False
                         
             if valid_move:
-                self.acc.x -= self.ACC
+                self.acc.x -= self.ACC if not self.is_in_water else self.ACC / 2
         elif move == 'right':
             valid_move = True
             
             for block in blocks:
-                if pygame.sprite.collide_rect(self, block):
+                if pygame.sprite.collide_rect(self, block) and block.type != 'water':
                     if self.rect.right + 10 > block.rect.left and self.rect.bottom > block.rect.bottom:
                         valid_move = False
                         
             if valid_move:
-                self.acc.x = self.ACC
+                self.acc.x = self.ACC if not self.is_in_water else self.ACC / 2
         elif move == 'jump' and (self.is_grounded or self.is_in_water):
             self.vel.y = -10
+
+        elif move == 'down' and self.is_in_water:
+            self.vel.y += 0.25
              
         self.acc.x += self.vel.x * self.FRIC
         self.vel += self.acc
@@ -109,57 +113,58 @@ class Zombie(pygame.sprite.Sprite):
         self.is_in_water = False
         
     def move(self, blocks, player) -> int:
-        move = self.calculate_move(player, blocks)
-        self.acc = self.vec(0, 0)
-        for block in blocks:
-            if block.type == 'water' and pygame.sprite.collide_rect(self, block):
-                self.vel.y += 0.001
-                self.is_grounded = False
-                self.is_in_water = True
-                break
-            elif pygame.sprite.collide_rect(self, block):
-                if not self.is_grounded:
-                    self.pos.y = block.rect.top - self.height + 1
+        if player:
+            move = self.calculate_move(player, blocks)
+            self.acc = self.vec(0, 0)
+            for block in blocks:
+                if block.type == 'water' and pygame.sprite.collide_rect(self, block):
+                    self.vel.y += 0.0005
+                    self.is_grounded = False
+                    self.is_in_water = True
+                    break
+                elif pygame.sprite.collide_rect(self, block):
+                    if not self.is_grounded:
+                        self.pos.y = block.rect.top - self.height + 1
+                        
+                    self.is_grounded = True
+                    self.vel.y = 0
+                    break
                     
-                self.is_grounded = True
-                self.vel.y = 0
-                break
+                self.is_grounded = False
+                self.is_in_water = False
                 
-            self.is_grounded = False
-            self.is_in_water = False
-            
-        if not self.is_grounded and not self.is_in_water:
-            self.acc = self.vec(0,0.5)
-            
-              
-        if move == 'left':
-            valid_move = True
-            
-            for block in blocks:
-                if pygame.sprite.collide_rect(self, block):
-                    if self.rect.left - 10 < block.rect.right and self.rect.bottom > block.rect.bottom:
-                        valid_move = False
-                        
-            if valid_move:
-                self.acc.x -= self.ACC
-        elif move == 'right':
-            valid_move = True
-            
-            for block in blocks:
-                if pygame.sprite.collide_rect(self, block):
-                    if self.rect.right + 10 > block.rect.left and self.rect.bottom > block.rect.bottom:
-                        valid_move = False
-                        
-            if valid_move:
-                self.acc.x = self.ACC
-        elif move == 'jump' and (self.is_grounded or self.is_in_water):
-            self.vel.y = -10
-             
-        self.acc.x += self.vel.x * self.FRIC
-        self.vel += self.acc
-        self.pos += self.vel + 0.5 * self.acc
-
-        self.rect.x, self.rect.y = self.pos
+            if not self.is_grounded and not self.is_in_water:
+                self.acc = self.vec(0,0.5)
+                
+                  
+            if move == 'left':
+                valid_move = True
+                
+                for block in blocks:
+                    if pygame.sprite.collide_rect(self, block):
+                        if self.rect.left - 10 < block.rect.right and self.rect.bottom > block.rect.bottom:
+                            valid_move = False
+                            
+                if valid_move:
+                    self.acc.x -= self.ACC
+            elif move == 'right':
+                valid_move = True
+                
+                for block in blocks:
+                    if pygame.sprite.collide_rect(self, block):
+                        if self.rect.right + 10 > block.rect.left and self.rect.bottom > block.rect.bottom:
+                            valid_move = False
+                            
+                if valid_move:
+                    self.acc.x = self.ACC
+            elif move == 'jump' and (self.is_grounded or self.is_in_water):
+                self.vel.y = -10
+                 
+            self.acc.x += self.vel.x * self.FRIC
+            self.vel += self.acc
+            self.pos += self.vel + 0.5 * self.acc
+    
+            self.rect.x, self.rect.y = self.pos
         self.screen.blit(self.image, self.pos)
 
     def calculate_move(self, player, blocks) -> str:
