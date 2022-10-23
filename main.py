@@ -103,14 +103,16 @@ class Minecraft:
         if not pygame.sprite.collide_rect(new_block, self.player) and not any([pygame.sprite.collide_rect(zombie, new_block) for zombie in self.zombies[self.x][self.y]]):
             self.blocks[self.x][self.y].append(new_block)
 
-    def remove_block(self, x: int, y: int) -> None:
+    def remove_block(self, x: int, y: int, tnt_blast=False) -> None:
         for block in self.blocks[self.x][self.y]:                    
             if block.rect.collidepoint(x, y):
+                if tnt_blast and block.type == 'water':
+                    continue
                 self.blocks[self.x][self.y].remove(block)
                 if block.type == 'tnt':
                     coordinates_to_remove = [(x-100, y), (x+100, y), (x-100, y-100), (x-100, y+100), (x+100, y-100), (x+100, y+100), (x, y-100), (x, y+100)]
                     for coords in coordinates_to_remove:
-                        self.remove_block(*coords)
+                        self.remove_block(*coords, tnt_blast=True)
                         if self.player.rect.collidepoint(*coords) and self.player.last_damaged_time > 50:
                             self.player.health -= 8
                             self.player.last_damaged_time = 0
