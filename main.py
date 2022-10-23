@@ -155,7 +155,7 @@ class Minecraft:
         self.screen.blit(self.text, (0, 0))
         if self.selectable_blocks.index(self.selected_block)-1 >= 0:
             self.screen.blit(self.mini_blocks[self.selectable_blocks[self.selectable_blocks.index(self.selected_block)-1]], (0, 50))
-        if self.selectable_blocks.index(self.selected_block)+1 < len(self.selectable_blocks)-1:
+        if self.selectable_blocks.index(self.selected_block)+1 <= len(self.selectable_blocks)-1:
             self.screen.blit(self.mini_blocks[self.selectable_blocks[self.selectable_blocks.index(self.selected_block)+1]], (100, 50))
         self.screen.blit(self.mini_blocks[self.selected_block], (50, 50))
         self.screen.blit(self.selected_block_outline, (50, 50))
