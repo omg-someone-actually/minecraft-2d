@@ -5,7 +5,7 @@ class Block(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.vec = pygame.math.Vector2
-        
+
         self.image = image
         self.screen = screen
         self.background = background

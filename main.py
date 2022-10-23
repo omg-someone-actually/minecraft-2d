@@ -107,6 +107,17 @@ class Minecraft:
         for block in self.blocks[self.x][self.y]:                    
             if block.rect.collidepoint(x, y):
                 self.blocks[self.x][self.y].remove(block)
+                if block.type == 'tnt':
+                    coordinates_to_remove = [(x-100, y), (x+100, y), (x-100, y-100), (x-100, y+100), (x+100, y-100), (x+100, y+100), (x, y-100), (x, y+100)]
+                    for coords in coordinates_to_remove:
+                        self.remove_block(*coords)
+                        if self.player.rect.collidepoint(*coords) and self.player.last_damaged_time > 50:
+                            self.player.health -= 8
+                            self.player.last_damaged_time = 0
+                        for zombie in self.zombies[self.x][self.y]:
+                            if zombie.rect.collidepoint(*coords) and zombie.last_damaged_time > 10:
+                                zombie.health -= 5
+                                zombie.last_damaged_time = 0
 
     def render_screen(self) -> None:
         self.screen.blit(self.background, (0,0))
@@ -172,9 +183,6 @@ class Minecraft:
                     
                 elif event.key == pygame.K_ESCAPE:
                     self.paused = not self.paused
-                    
-                elif event.key in range(48, 58) and not self.paused:
-                    self.selected_block = self.selectable_blocks[event.key-48]
                     
                 elif event.key == pygame.K_z and not self.paused:
                     self.spawn_zombie()
