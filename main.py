@@ -42,7 +42,7 @@ class Minecraft:
 
         self.load_assets()
         self.generate_map()
-        self.screen_update()
+        self.game_loop()
 
     def load_assets(self) -> None:
         assets = ['dirt', 'stone', 'coal', 'gold', 'redstone', 'grass', 'sand', 'water', 'glass', 'plank', 'leaves', 'log', 'tnt']
@@ -113,7 +113,7 @@ class Minecraft:
                     for coords in coordinates_to_remove:
                         self.remove_block(*coords, tnt_blast=True)
                         if self.player.rect.collidepoint(*coords) and self.player.last_damaged_time > 50:
-                            self.player.health -= 8
+                            self.player.health -= 8 if not self.player.is_in_water else 4
                             self.player.last_damaged_time = 0
                         for zombie in self.zombies[self.x][self.y]:
                             if zombie.rect.collidepoint(*coords) and zombie.last_damaged_time > 10:
@@ -242,7 +242,7 @@ class Minecraft:
             self.player.heal_time = 0
                 
 
-    def screen_update(self) -> None:
+    def game_loop(self) -> None:
         while True:
             pygame.display.update()
             if not self.paused:
