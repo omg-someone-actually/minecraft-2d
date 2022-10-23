@@ -99,7 +99,7 @@ class Minecraft:
             if block.pos == (x, y):
                 return
         new_block = Block(self.textures[self.selected_block], x, y, self.screen, self.background, self.selected_block, self.blocks[self.x][self.y])
-        if not pygame.sprite.collide_rect(new_block, self.player) and not any([pygame.sprite.collide_rect(zombie, new_block) for zombie in self.zombies]):
+        if not pygame.sprite.collide_rect(new_block, self.player) and not any([pygame.sprite.collide_rect(zombie, new_block) for zombie in self.zombies[self.x][self.y]]):
             self.blocks[self.x][self.y].append(new_block)
 
     def remove_block(self, x: int, y: int) -> None:

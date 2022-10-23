@@ -1,5 +1,5 @@
 import pygame
-from random import randint
+from random import randint, choice
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, width, height, screen) -> None:
@@ -176,11 +176,12 @@ class Zombie(pygame.sprite.Sprite):
         self.screen.blit(self.image, self.pos)
 
     def calculate_move(self, player, blocks) -> str:
+        possible_moves = []
         if self.pos.y > player.pos.y + 10 and player.is_grounded:
-            return 'jump'
-        elif self.pos.x < player.pos.x:
-            return 'right'
-        elif self.pos.x > player.pos.x:
-            return 'left'
+          possible_moves.append('jump')  
+        if self.pos.x < player.pos.x:
+            possible_moves.append('right')
+        if self.pos.x > player.pos.x:
+            possible_moves.append('left')
             
-        return None
+        return choice(possible_moves) if possible_moves else None
