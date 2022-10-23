@@ -25,7 +25,10 @@ class Player(pygame.sprite.Sprite):
         self.is_grounded = False
         self.is_in_water = False
         
-    def move(self, move: str, blocks: dict, x: int, y: int) -> int:
+    def move(self, move: str, blocks: dict, x: int, y: int, is_shifting: bool) -> int:
+        self.ACC = 0.5
+        if is_shifting:
+            self.ACC = 1
         self.acc = self.vec(0, 0)
         for block in blocks:
             if block.type == 'water' and pygame.sprite.collide_rect(self, block):

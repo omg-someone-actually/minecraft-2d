@@ -22,6 +22,7 @@ class Minecraft:
 
         self.paused_icon = pygame.transform.scale(pygame.image.load('assets/paused.PNG').convert_alpha(), (self.width/2, self.height/2))
         self.block_outline = pygame.transform.scale(pygame.image.load('assets/block-outline.png').convert_alpha(), (100, 100))
+        self.selected_block_outline = pygame.transform.scale(pygame.image.load('assets/block-outline.png').convert_alpha(), (50, 50))
         self.full_heart = pygame.transform.scale(pygame.image.load('assets/heart.png').convert_alpha(), (30,30))
         self.half_heart = pygame.transform.flip(pygame.transform.scale(pygame.image.load('assets/halfheart.png').convert_alpha(), (30,30)), True, False)
         self.empty_heart = pygame.transform.scale(pygame.image.load('assets/noheart.png').convert_alpha(), (30,30))
@@ -29,7 +30,7 @@ class Minecraft:
         
         self.player = pygame.transform.scale(pygame.image.load('assets/steve.PNG').convert_alpha(), (75, 150))
         self.player = Player(self.player, 75, 150, self.screen)
-        self.player.move(None, [], 1, 1)
+        self.player.move(None, [], 1, 1, False)
 
         self.zombies = {}
         
@@ -152,7 +153,12 @@ class Minecraft:
             
         self.text = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(self.text, (0, 0))
-        self.screen.blit(self.mini_blocks[self.selected_block], (0, 50))
+        if self.selectable_blocks.index(self.selected_block)-1 >= 0:
+            self.screen.blit(self.mini_blocks[self.selectable_blocks[self.selectable_blocks.index(self.selected_block)-1]], (0, 50))
+        if self.selectable_blocks.index(self.selected_block)+1 < len(self.selectable_blocks)-1:
+            self.screen.blit(self.mini_blocks[self.selectable_blocks[self.selectable_blocks.index(self.selected_block)+1]], (100, 50))
+        self.screen.blit(self.mini_blocks[self.selected_block], (50, 50))
+        self.screen.blit(self.selected_block_outline, (50, 50))
 
     def restart_game(self) -> None:
         self.blocks = {}
@@ -206,7 +212,7 @@ class Minecraft:
                 new_move = moves[move]
                 break
 
-        self.x, self.y = self.player.move(new_move if not self.paused else None, self.blocks[self.x][self.y], self.x, self.y)
+        self.x, self.y = self.player.move(new_move if not self.paused else None, self.blocks[self.x][self.y], self.x, self.y, keys[pygame.K_LSHIFT])
         self.player.y_level = int(int(self.height - self.player.pos.y) / 100) + ((self.y-1) * 9)
         self.player.x_level = int(int(self.player.pos.x - self.width) / 100) + ((self.x-1) * 16)
         self.generate_map()
