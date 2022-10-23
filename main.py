@@ -21,6 +21,7 @@ class Minecraft:
         self.screen.blit(self.background, (0,0))
 
         self.paused_icon = pygame.transform.scale(pygame.image.load('assets/paused.PNG').convert_alpha(), (self.width/2, self.height/2))
+        self.block_outline = pygame.transform.scale(pygame.image.load('assets/block-outline.png').convert_alpha(), (100, 100))
         self.full_heart = pygame.transform.scale(pygame.image.load('assets/heart.png').convert_alpha(), (30,30))
         self.half_heart = pygame.transform.flip(pygame.transform.scale(pygame.image.load('assets/halfheart.png').convert_alpha(), (30,30)), True, False)
         self.empty_heart = pygame.transform.scale(pygame.image.load('assets/noheart.png').convert_alpha(), (30,30))
@@ -35,7 +36,7 @@ class Minecraft:
         self.x, self.y, = 1, 1
         self.blocks = {}
         self.selected_block = 'stone'
-        self.selectable_blocks = ['stone', 'coal', 'gold','redstone', 'grass', 'sand', 'water', 'dirt', 'glass', 'plank']
+        self.selectable_blocks = ['stone', 'coal', 'gold', 'redstone', 'grass', 'sand', 'water', 'dirt', 'glass', 'plank', 'leaves', 'log', 'tnt']
         self.paused = False
 
         self.load_assets()
@@ -43,7 +44,7 @@ class Minecraft:
         self.screen_update()
 
     def load_assets(self) -> None:
-        assets = ['dirt', 'stone', 'coal', 'gold', 'redstone', 'grass', 'sand', 'water', 'glass', 'plank']
+        assets = ['dirt', 'stone', 'coal', 'gold', 'redstone', 'grass', 'sand', 'water', 'glass', 'plank', 'leaves', 'log', 'tnt']
         self.textures = {}
         self.mini_blocks = {}
         
@@ -130,6 +131,11 @@ class Minecraft:
 
         if self.player.last_damaged_time < 100 and self.player.health < 20:
             self.screen.blit(self.damaged_heart, (self.player.rect.x+20, self.player.rect.y-25))
+
+        
+        x, y = pygame.mouse.get_pos()
+        x, y = round((x-50)/100)*100, (round((y-100)/100)*100)+self.y_offset
+        self.screen.blit(self.block_outline, (x, y))
             
         self.text = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(self.text, (0, 0))
@@ -157,7 +163,7 @@ class Minecraft:
                     
                 elif event.button == 3:
                     x, y = event.pos
-                    x, y = round(x/100)*100, (round(y/100)*100)+self.y_offset
+                    x, y = round((x-50)/100)*100, (round((y-100)/100)*100)+self.y_offset
                     self.add_block(x, y)
                         
             elif event.type == pygame.KEYDOWN:
@@ -173,6 +179,10 @@ class Minecraft:
                 elif event.key == pygame.K_z and not self.paused:
                     self.spawn_zombie()
                     
+            elif event.type == pygame.MOUSEWHEEL:
+                selected_block_index = self.selectable_blocks.index(self.selected_block)
+                new_index = selected_block_index + event.y
+                self.selected_block = self.selectable_blocks[new_index if not new_index < 0 and not new_index > len(self.selectable_blocks)-1 else selected_block_index]
             elif event.type == pygame.QUIT:
                 pygame.quit()
                 
