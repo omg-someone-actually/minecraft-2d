@@ -24,6 +24,7 @@ class Minecraft:
         self.full_heart = pygame.transform.scale(pygame.image.load('assets/heart.png').convert_alpha(), (30,30))
         self.half_heart = pygame.transform.flip(pygame.transform.scale(pygame.image.load('assets/halfheart.png').convert_alpha(), (30,30)), True, False)
         self.empty_heart = pygame.transform.scale(pygame.image.load('assets/noheart.png').convert_alpha(), (30,30))
+        self.damaged_heart = pygame.transform.scale(pygame.image.load('assets/damagedheart.png').convert_alpha(), (20,20))
         
         self.player = pygame.transform.scale(pygame.image.load('assets/steve.PNG').convert_alpha(), (75, 150))
         self.player = Player(self.player, 75, 150, self.screen)
@@ -122,6 +123,13 @@ class Minecraft:
                 hearts_shown += 1
             else:
                 self.screen.blit(self.empty_heart, (self.width-((i+1)*35), 10))
+
+        for zombie in self.zombies[self.x][self.y]:
+            if zombie.last_damaged_time < 100 and zombie.health < 10:
+                self.screen.blit(self.damaged_heart, (zombie.rect.x+20, zombie.rect.y-25))
+
+        if self.player.last_damaged_time < 100 and self.player.health < 20:
+            self.screen.blit(self.damaged_heart, (self.player.rect.x+20, self.player.rect.y-25))
             
         self.text = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(self.text, (0, 0))
