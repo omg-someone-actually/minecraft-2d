@@ -1,15 +1,15 @@
 import pygame
 from random import randint, choice
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, image, width, height, screen, x: int = 200) -> None:
+class Sprite(pygame.sprite.Sprite):
+    def __init__(self, image, width, height, screen, x: int, y: int, health: int, acc: int, max_health: int) -> None:
         pygame.sprite.Sprite.__init__(self)
 
         self.vec = pygame.math.Vector2
-        self.ACC = 0.5
+        self.ACC = acc
         self.FRIC = -0.12
 
-        self.health = 20
+        self.health = health
         self.last_damaged_time = 0
         self.heal_time = 0
         self.y_level = 0
@@ -25,10 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.is_grounded = False
         self.is_in_water = False
         
-    def move(self, move: str, blocks: dict, x: int, y: int, is_shifting: bool, acc: int = 0.5) -> int:
+    def move(self, move: str, blocks: dict, x: int, y: int, acc: int) -> int:
         self.ACC = acc
-        if is_shifting:
-            self.ACC = 1
         self.acc = self.vec(0, 0)
         for block in blocks:
             if block.type == 'water' and pygame.sprite.collide_rect(self, block):
@@ -101,14 +99,25 @@ class Player(pygame.sprite.Sprite):
         return x, y
 
 
-class Zombie(Player):
+class Player(Sprite):
     def __init__(self, image, width, height, screen) -> None:
-        Player.__init__(self, image, width, height, screen, randint(100, 500))
+        Sprite.__init__(self, image, width, height, screen, 200, 200, 20, 0.5, 20)
+
+    def move(self, move, blocks, x, y, is_shifting):
+        acc = 0.5
+        if is_shifting:
+            acc = 1
+
+        return Sprite.move(self, move, blocks, x, y, acc)
+
+class Zombie(Sprite):
+    def __init__(self, image, width, height, screen) -> None:
+        Sprite.__init__(self, image, width, height, screen, randint(100, 500), 200, 10, 0.1, 10)
         
     def move(self, blocks: dict, player: Player) -> int:
         if player:
             move = self.calculate_move(player, blocks)
-            Player.move(self, move, blocks, 0, 0, False, 0.1)
+            Sprite.move(self, move, blocks, 0, 0, 0.1)
 
     def calculate_move(self, player, blocks) -> str:
         possible_moves = []
