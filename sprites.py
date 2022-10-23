@@ -105,7 +105,10 @@ class Zombie(pygame.sprite.Sprite):
         self.vec = pygame.math.Vector2
         self.ACC = 0.1
         self.FRIC = -0.12
-        
+
+        self.health = 10
+        self.last_damaged_time = 0
+        self.heal_time = 0
         self.image = image
         self.pos = self.vec(randint(100, 500), 200)
         self.width, self.height = (width, height)
