@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
 
         self.health = 20
         self.last_damaged_time = 0
+        self.heal_time = 0
         self.y_level = 0
         self.x_level = 0
         self.image = image

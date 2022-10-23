@@ -178,7 +178,7 @@ class Minecraft:
         
         for zombie in self.zombies:
             zombie.move(self.blocks[self.x][self.y], self.player if not self.paused else None)
-            if pygame.sprite.collide_rect(zombie, self.player) and self.player.last_damaged_time > 10:
+            if pygame.sprite.collide_rect(zombie, self.player) and self.player.last_damaged_time > 50:
                 self.player.health -= 1
                 self.player.last_damaged_time = 0
                 
@@ -196,9 +196,13 @@ class Minecraft:
                 self.screen.blit(self.paused_icon, self.paused_icon.get_rect(center = self.screen.get_rect().center))
                 
             self.player.last_damaged_time += 1
+            self.player.heal_time += 1
             if self.player.health <= 0:
                 self.paused = True
                 self.restart_game()
+            if self.player.last_damaged_time > 500 and self.player.heal_time > 100 and self.player.health < 20:
+                self.player.health += 1
+                self.player.heal_time = 0
             
             pygame.event.pump()
             self.clock.tick(100)
