@@ -12,6 +12,7 @@ class Sprite(pygame.sprite.Sprite):
         self.health = health
         self.last_damaged_time = 0
         self.heal_time = 0
+        self.max_health = max_health
         self.y_level = 0
         self.x_level = 0
         self.image = image
@@ -103,12 +104,8 @@ class Player(Sprite):
     def __init__(self, image, width, height, screen) -> None:
         Sprite.__init__(self, image, width, height, screen, 200, 200, 20, 0.5, 20)
 
-    def move(self, move, blocks, x, y, is_shifting):
-        acc = 0.5
-        if is_shifting:
-            acc = 1
-
-        return Sprite.move(self, move, blocks, x, y, acc)
+    def move(self, move: str, blocks: dict, x: int, y: int, is_shifting: bool):
+        return Sprite.move(self, move, blocks, x, y, 1 if is_shifting else 0.5)
 
 class Zombie(Sprite):
     def __init__(self, image, width, height, screen) -> None:
@@ -119,7 +116,7 @@ class Zombie(Sprite):
             move = self.calculate_move(player, blocks)
             Sprite.move(self, move, blocks, 0, 0, 0.1)
 
-    def calculate_move(self, player, blocks) -> str:
+    def calculate_move(self, player: Player, blocks: dict) -> str:
         possible_moves = []
         if self.pos.y > player.pos.y + 10 and player.is_grounded:
           possible_moves.append('jump')  

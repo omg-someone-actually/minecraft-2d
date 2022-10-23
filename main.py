@@ -12,7 +12,7 @@ class Minecraft:
         self.screen = pygame.display.set_mode()
         self.width, self.height = pygame.display.get_surface().get_size()
         pygame.display.set_caption('Minecraft!')
-        self.font = pygame.font.Font('freesansbold.ttf', 50)
+        self.font = pygame.font.Font('freesansbold.ttf', 25)
         self.y_offset = self.height - math.floor(self.height/100)*100 
         self.total_blocks_x = math.ceil(self.width / 100)
         self.total_blocks_y = math.ceil(self.height / 100)
@@ -140,19 +140,21 @@ class Minecraft:
                 self.screen.blit(self.empty_heart, (self.width-((i+1)*35), 10))
 
         for zombie in self.zombies[self.x][self.y]:
-            if zombie.last_damaged_time < 100 and zombie.health < 10:
+            if zombie.last_damaged_time < 100 and zombie.health < zombie.max_health:
                 self.screen.blit(self.damaged_heart, (zombie.rect.x+20, zombie.rect.y-25))
 
-        if self.player.last_damaged_time < 100 and self.player.health < 20:
+        if self.player.last_damaged_time < 100 and self.player.health < self.player.max_health:
             self.screen.blit(self.damaged_heart, (self.player.rect.x+20, self.player.rect.y-25))
 
         
         x, y = pygame.mouse.get_pos()
         x, y = round((x-50)/100)*100, (round((y-100)/100)*100)+self.y_offset
         self.screen.blit(self.block_outline, (x, y))
-            
-        self.text = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
-        self.screen.blit(self.text, (0, 0))
+
+        self.fps = self.font.render(f'FPS: {int(self.clock.get_fps())}', True, (255, 255, 255), (0, 0, 0))
+        self.screen.blit(self.fps, (0, 0))
+        self.coords = self.font.render(f'x={self.player.x_level} y={self.player.y_level}', True, (255, 255, 255), (0, 0, 0))
+        self.screen.blit(self.coords, (0, 25))
         if self.selectable_blocks.index(self.selected_block)-1 >= 0:
             self.screen.blit(self.mini_blocks[self.selectable_blocks[self.selectable_blocks.index(self.selected_block)-1]], (0, 50))
         if self.selectable_blocks.index(self.selected_block)+1 <= len(self.selectable_blocks)-1:
@@ -231,13 +233,13 @@ class Minecraft:
             zombie.heal_time += 1
             if zombie.health <= 0:
                 self.zombies[self.x][self.y].remove(zombie)
-            if zombie.last_damaged_time > 1000 and zombie.heal_time > 200 and zombie.health < 10:
+            if zombie.last_damaged_time > 1000 and zombie.heal_time > 200 and zombie.health < zombie.max_health:
                 zombie.health += 1
                 zombie.heal_time = 0
         if self.player.health <= 0:
             self.paused = True
             self.restart_game()
-        if self.player.last_damaged_time > 500 and self.player.heal_time > 100 and self.player.health < 20:
+        if self.player.last_damaged_time > 500 and self.player.heal_time > 100 and self.player.health < self.player.max_health:
             self.player.health += 1
             self.player.heal_time = 0
                 
@@ -250,12 +252,11 @@ class Minecraft:
                 
             self.event_handler()
             self.move_entities()
-            
-            if self.paused:    
-                self.screen.blit(self.paused_icon, self.paused_icon.get_rect(center = self.screen.get_rect().center))
-                
             self.check_health()
             
+            if self.paused:    
+                self.screen.blit(self.paused_icon, self.paused_icon.get_rect(center=self.screen.get_rect().center))
+
             pygame.event.pump()
             self.clock.tick(100)
                 
