@@ -63,9 +63,7 @@ class Minecraft:
             self.zombies[x] = {}
             self.zombies[x][1] = []
 
-            selected_biome = choices(biomes, weights=[6, 10, 4], k=1)[0]
-            if x == 1:
-                selected_biome = 'plains'
+            selected_biome = choices(biomes, weights=[6, 10, 4], k=1)[0] if not x == 1 else 'plains'
             if selected_biome == 'plains':
                 for i in range(2):    
                     for x_cord, texture in enumerate(['dirt' for i in range(self.total_blocks_x)]):
@@ -128,17 +126,6 @@ class Minecraft:
         for block in self.blocks[self.x][self.y]:
             block.show()
 
-        hearts_shown = 0
-        for i in range(10):
-            if hearts_shown + 2 <= self.player.health:
-                self.screen.blit(self.full_heart, (self.width-((i+1)*35), 10))
-                hearts_shown += 2
-            elif hearts_shown + 1 <= self.player.health:
-                self.screen.blit(self.half_heart, (self.width-((i+1)*35), 10))
-                hearts_shown += 1
-            else:
-                self.screen.blit(self.empty_heart, (self.width-((i+1)*35), 10))
-
         for zombie in self.zombies[self.x][self.y]:
             if zombie.last_damaged_time < 100 and zombie.health < zombie.max_health:
                 self.screen.blit(self.damaged_heart, (zombie.rect.x+20, zombie.rect.y-25))
@@ -150,6 +137,17 @@ class Minecraft:
         x, y = pygame.mouse.get_pos()
         x, y = round((x-50)/100)*100, (round((y-100)/100)*100)+self.y_offset
         self.screen.blit(self.block_outline, (x, y))
+
+        hearts_shown = 0
+        for i in range(10):
+            if hearts_shown + 2 <= self.player.health:
+                self.screen.blit(self.full_heart, (self.width-((i+1)*35), 10))
+                hearts_shown += 2
+            elif hearts_shown + 1 <= self.player.health:
+                self.screen.blit(self.half_heart, (self.width-((i+1)*35), 10))
+                hearts_shown += 1
+            else:
+                self.screen.blit(self.empty_heart, (self.width-((i+1)*35), 10))
 
         self.fps = self.font.render(f'FPS: {int(self.clock.get_fps())}', True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(self.fps, (0, 0))

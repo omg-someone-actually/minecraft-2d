@@ -109,7 +109,7 @@ class Player(Sprite):
 
 class Zombie(Sprite):
     def __init__(self, image, width, height, screen) -> None:
-        Sprite.__init__(self, image, width, height, screen, randint(100, 500), 200, 10, 0.1, 10)
+        Sprite.__init__(self, image, width, height, screen, randint(75, screen.get_width()-75), 200, 10, 0.1, 10)
         
     def move(self, blocks: dict, player: Player) -> int:
         if player:
