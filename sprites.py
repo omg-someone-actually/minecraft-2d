@@ -29,23 +29,22 @@ class Sprite(pygame.sprite.Sprite):
     def move(self, move: str, blocks: dict, x: int, y: int, acc: int) -> int:
         self.ACC = acc
         self.acc = self.vec(0, 0)
+        has_touched_water = False
+        has_touched_ground = False
         for block in blocks:
             if block.type == 'water' and pygame.sprite.collide_rect(self, block):
                 self.vel.y /= 1.05
                 self.vel.y += 0.005
-                self.is_grounded = False
-                self.is_in_water = True
-                break
+                has_touched_water = True
             elif pygame.sprite.collide_rect(self, block):
                 if not self.is_grounded:
                     self.pos.y = block.rect.top - self.height + 1
                     
-                self.is_grounded = True
+                has_touched_ground = True
                 self.vel.y = 0
-                break
                 
-            self.is_grounded = False
-            self.is_in_water = False
+            self.is_grounded = has_touched_ground
+            self.is_in_water = has_touched_water
             
         if not self.is_grounded and not self.is_in_water:
             self.acc = self.vec(0,0.5)

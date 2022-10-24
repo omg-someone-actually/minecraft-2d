@@ -113,6 +113,7 @@ class Minecraft:
                     for coords in coordinates_to_remove:
                         self.remove_block(*coords, tnt_blast=True)
                         if self.player.rect.collidepoint(*coords) and self.player.last_damaged_time > 50:
+                            print(self.player.is_in_water)
                             self.player.health -= 8 if not self.player.is_in_water else 4
                             self.player.last_damaged_time = 0
                         for zombie in self.zombies[self.x][self.y]:
@@ -255,6 +256,7 @@ class Minecraft:
             if self.paused:    
                 self.screen.blit(self.paused_icon, self.paused_icon.get_rect(center=self.screen.get_rect().center))
 
+            print(self.player.is_in_water, self.player.is_grounded)
             pygame.event.pump()
             self.clock.tick(100)
                 
